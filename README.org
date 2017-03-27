@@ -1,0 +1,13 @@
+* flycheck-julia
+
+This is a fairly simple implementation of a flycheck checker for Julia
+that uses Julia and [[Lint.jl]] to check files. At the moment, both
+Julia's include and, to an even greater degree, Lint.jl have a
+considerable startup time, so it isn't possible to just run them anew
+every time.
+
+It works well enough on files that define modules, because then
+everything is correctly brought into scope. Quite a lot of files, even
+I think in Julia's source, are written to be ~include~-ed into other
+files, so neither ~include~, nor ~Lint.jl~ can handle them, and it
+will show just one error, usually the first undefined symbol.
