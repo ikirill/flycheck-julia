@@ -23,3 +23,7 @@ Right now, it's necessary to add the directory with =FlycheckJulia.jl=
 to ~LOAD_PATH~, so that ~import FlycheckJulia~ works. (I'm not sure how
 to get the location from flycheck or elisp.) Then select the checker
 manuall with =C-c ! s=, or use ~(add-to-list 'flycheck-checkers 'julia)~.
+
+There's another issue that I'm redirecting output to =/dev/null=
+(including a file will run top-level code, if any!), but flycheck
+seems to prefer ~null-device~.
