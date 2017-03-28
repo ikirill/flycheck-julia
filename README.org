@@ -1,7 +1,7 @@
 * flycheck-julia
 
 This is a fairly simple implementation of a flycheck checker for Julia
-that uses Julia and [[Lint.jl]] to check files. At the moment, both
+that uses Julia and [[https://github.com/tonyhffong/Lint.jl][Lint.jl]] to check files. At the moment, both
 Julia's include and, to an even greater degree, Lint.jl have a
 considerable startup time, so it isn't possible to just run them anew
 every time.
@@ -16,3 +16,10 @@ Right now this doesn't use ~lintserver~, because I didn't want to read
 the file in elisp then send it to ~lintserver~, instead I send the
 temporary file name that flycheck generates, and then the julia
 process reads that file directly.
+
+** How to use
+
+Right now, it's necessary to add the directory with =FlycheckJulia.jl=
+to ~LOAD_PATH~, so that ~import FlycheckJulia~ works. (I'm not sure how
+to get the location from flycheck or elisp.) Then select the checker
+manuall with =C-c ! s=, or use ~(add-to-list 'flycheck-checkers 'julia)~.
