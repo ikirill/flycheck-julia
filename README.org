@@ -19,4 +19,6 @@ process reads that file directly.
 ** How to use
 
 Select the checker manually with =C-c ! s=, or add ~(add-to-list
-'flycheck-checkers 'julia)~ to your init-file.
+'flycheck-checkers 'julia)~ to your init-file. Because of the startup
+time (a dozen seconds, or so?), it will print a message when it runs
+the process, and another when the process is ready to be helpful.
