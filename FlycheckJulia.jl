@@ -31,7 +31,7 @@ const Severity = Dict('E' => "error", 'W' => "warning", 'I' => "info")
 # FIXME Can m.message have newlines? What then?
 function lintMessage(m::LintMessage)
   Dict("file" => m.file,
-       "severity" => Severity[string(m.code)[1]],
+       "severity" => get(Severity, string(m.code)[1], "error"),
        "code" => m.code,
        "line" => m.line,
        "message" =>
@@ -40,7 +40,6 @@ function lintMessage(m::LintMessage)
 end
 
 function main(fname::AbstractString, tmpfname::AbstractString)
-  # println(STDERR, "FlycheckJulia.jl:main: ", fname, " ", tmpfname)
   # FIXME Does this properly handle files that aren't correctly
   # FIXME enclosed in modules? Probably not?
   le = tryInclude(fname)
