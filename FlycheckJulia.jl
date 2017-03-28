@@ -5,22 +5,6 @@ using Lint
 
 devnull = nothing
 
-function tryInclude(f::AbstractString)
-  old_stdout, old_stderr = Base.STDOUT, Base.STDERR
-  redirect_stdout(devnull)
-  redirect_stderr(devnull)
-  ans = try
-    include(f)
-    nothing
-  catch e
-    isa(e, LoadError) || rethrow()
-    e
-  end
-  redirect_stdout(old_stdout)
-  redirect_stderr(old_stderr)
-  ans
-end
-
 # Matches flycheck-define-error-level in flycheck.el
 const Severity = Dict('E' => "error", 'W' => "warning", 'I' => "info")
 
@@ -42,15 +26,8 @@ end
 function main(fname::AbstractString, tmpfname::AbstractString)
   # FIXME Does this properly handle files that aren't correctly
   # FIXME enclosed in modules? Probably not?
-  le = tryInclude(fname)
-  # Anything other than LoadError should fail
-  if isa(le, LoadError)
-    return JSON.json([Dict("file" => le.file, "line" => le.line, "message" => string(le.error))])
-  else
-    result = lintfile(fname, readstring(tmpfname))
-    return JSON.json([lintMessage(m) for m in result.messages])
-  end
-  return "null" # (json-encode nil)
+  result = lintfile(fname, readstring(tmpfname))
+  return JSON.json([lintMessage(m) for m in result.messages])
 end
 
 function main()
