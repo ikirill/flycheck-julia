@@ -34,8 +34,6 @@ function lintMessage(m::LintMessage)
        "severity" => Severity[string(m.code)[1]],
        "code" => m.code,
        "line" => m.line,
-       # "scope" => m.scope,
-       # "variable" => m.variable,
        "message" =>
        m.scope == "" ? @sprintf("%s: %s", m.variable, m.message) : @sprintf("%s: %s: %s", m.scope, m.variable, m.message)
        )
@@ -45,7 +43,6 @@ function main(fname::AbstractString, tmpfname::AbstractString)
   # println(STDERR, "FlycheckJulia.jl:main: ", fname, " ", tmpfname)
   # FIXME Does this properly handle files that aren't correctly
   # FIXME enclosed in modules? Probably not?
-  # e = fetch(@spawn tryInclude(f))
   le = tryInclude(fname)
   # Anything other than LoadError should fail
   if isa(le, LoadError)
@@ -60,12 +57,9 @@ end
 function main()
   global devnull
   devnull = open(length(ARGS) >= 1 ? ARGS[1] : "/dev/null", "w")
-  # println(STDERR, "FlycheckJulia.jl: main: Hello!")
   while true
     request = JSON.parse(readline())
-    # println(STDERR, "Got request: ", request)
     response = main(request["file"], request["tempfile"])
-    # println(STDERR, "Response: ", response)
     println(response)
   end
 end
