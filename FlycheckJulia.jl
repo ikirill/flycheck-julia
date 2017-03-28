@@ -3,8 +3,6 @@ module FlycheckJulia
 using JSON
 using Lint
 
-devnull = nothing
-
 # Matches flycheck-define-error-level in flycheck.el
 const Severity = Dict('E' => "error", 'W' => "warning", 'I' => "info")
 
@@ -31,9 +29,6 @@ function main(fname::AbstractString, tmpfname::AbstractString)
 end
 
 function main()
-  global devnull
-  # devnull = open(length(ARGS) >= 1 ? ARGS[1] : "/dev/null", "w")
-  devnull = open("/dev/null", "w")
   while true
     request = JSON.parse(readline())
     response = main(request["file"], request["tempfile"])
