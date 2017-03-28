@@ -29,12 +29,69 @@ informed.")
 (defvar flycheck-julia--stderrbuf nil
   "The buffer for STDERR output of the julia server.")
 
+(defvar flycheck-julia--source-tempfile nil)
+(defvar flycheck-julia--source
+  "module FlycheckJulia
+
+using JSON
+using Lint
+
+# Matches flycheck-define-error-level in flycheck.el
+const Severity = Dict('E' => \"error\", 'W' => \"warning\", 'I' => \"info\")
+
+# See Lint/src/messages.jl, this replicates Base.show for LintMessage
+# a little, so that we can encode to JSON directly. Base.show is
+# designed for printing to stdout
+#
+# FIXME Can m.message have newlines? What then?
+function lintMessage(m::LintMessage)
+  Dict(\"file\" => m.file,
+       \"severity\" => get(Severity, string(m.code)[1], \"error\"),
+       \"code\" => m.code,
+       \"line\" => m.line,
+       \"message\" =>
+       m.scope == \"\" ? @sprintf(\"%s: %s\", m.variable, m.message) : @sprintf(\"%s: %s: %s\", m.scope, m.variable, m.message)
+       )
+end
+
+function main(fname::AbstractString, tmpfname::AbstractString)
+  # FIXME Does this properly handle files that aren't correctly
+  # FIXME enclosed in modules? Probably not?
+  result = lintfile(fname, readstring(tmpfname))
+  return JSON.json([lintMessage(m) for m in result.messages])
+end
+
+function main()
+  while true
+    request = JSON.parse(readline())
+    response = main(request[\"file\"], request[\"tempfile\"])
+    println(response)
+  end
+end
+
+end
+"
+  "Source of the julia server.
+
+Including the julia source directly in the elisp file allows this
+checker to not require LOAD_PATH to be set appropriately, because
+it will load the source from a temporary file.")
+
 (defun flycheck-julia--ensure ()
   "Create `flycheck-julia--queue' if necessary."
   (unless flycheck-julia--queue
     (setq flycheck-julia--queue (flycheck-julia--create-queue)))
   ;; (message "flycheck-julia--queue: %S" flycheck-julia--queue)
   )
+
+(defun flycheck-julia--source-tempfile-ensure ()
+  (unless flycheck-julia--source-tempfile
+    (setq flycheck-julia--source-tempfile (make-temp-file "flycheck-julia"))
+    (message flycheck-julia--source-tempfile)
+    (with-temp-buffer
+      (insert flycheck-julia--source)
+      (write-region nil nil flycheck-julia--source-tempfile)))
+  flycheck-julia--source-tempfile)
 
 (defun flycheck-julia--create-queue ()
   "Create a Julia background process and set up the queue."
@@ -47,7 +104,7 @@ informed.")
     :name "flycheck-julia"
     ;; :buffer "*julia*-stdout"
     :buffer nil
-    :command '("julia" "--quiet" "--color=no" "--history-file=no" "--eval" "import FlycheckJulia; FlycheckJulia.main()")
+    :command `("julia" "--quiet" "--color=no" "--history-file=no" "--eval" "include(ARGS[1]); FlycheckJulia.main()" "--" ,(flycheck-julia--source-tempfile-ensure))
     ;; :stderr "*flycheck-julia-stderr*"
     :stderr (setq flycheck-julia--stderrbuf
                   (get-buffer-create " *flycheck-julia-stderr*"))
