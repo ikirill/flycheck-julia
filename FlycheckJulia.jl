@@ -56,7 +56,8 @@ end
 
 function main()
   global devnull
-  devnull = open(length(ARGS) >= 1 ? ARGS[1] : "/dev/null", "w")
+  # devnull = open(length(ARGS) >= 1 ? ARGS[1] : "/dev/null", "w")
+  devnull = open("/dev/null", "w")
   while true
     request = JSON.parse(readline())
     response = main(request["file"], request["tempfile"])
