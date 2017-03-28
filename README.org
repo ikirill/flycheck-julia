@@ -11,3 +11,8 @@ everything is correctly brought into scope. Quite a lot of files, even
 I think in Julia's source, are written to be ~include~-ed into other
 files, so neither ~include~, nor ~Lint.jl~ can handle them, and it
 will show just one error, usually the first undefined symbol.
+
+Right now this doesn't use ~lintserver~, because I didn't want to read
+the file in elisp then send it to ~lintserver~, instead I send the
+temporary file name that flycheck generates, and then the julia
+process reads that file directly.
